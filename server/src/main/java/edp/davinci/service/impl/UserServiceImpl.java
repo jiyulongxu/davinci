@@ -41,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -78,6 +79,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private LdapService ldapService;
+
+
 
     /**
      * 用户是否存在
@@ -133,6 +136,38 @@ public class UserServiceImpl implements UserService {
                     Constants.USER_ACTIVATE_EMAIL_TEMPLATE,
                     content);
 
+            return user;
+        } else {
+            log.info("regist fail: {}", userRegist.toString());
+            throw new ServerException("regist fail: unspecified error");
+        }
+    }
+
+
+    /**
+     * 用户注册接口
+     *
+     * @param userRegist
+     * @return
+     */
+    @Override
+    @Transactional
+    public synchronized User registNoMail(UserRegist userRegist) throws ServerException {
+        //用户名是否已经注册
+        if (isExist(userRegist.getUsername(), null, null)) {
+            log.info("the username {} has been registered", userRegist.getUsername());
+            throw new ServerException("the username:" + userRegist.getUsername() + " has been registered");
+        }
+
+
+        User user = new User();
+        //密码加密
+        userRegist.setPassword(BCrypt.hashpw(userRegist.getPassword(), BCrypt.gensalt()));
+        BeanUtils.copyProperties(userRegist, user);
+        user.setActive(true);
+        //添加用户
+        int insert = userMapper.insert(user);
+        if (insert > 0) {
             return user;
         } else {
             log.info("regist fail: {}", userRegist.toString());

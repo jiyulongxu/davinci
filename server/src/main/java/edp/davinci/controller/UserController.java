@@ -28,6 +28,7 @@ import edp.davinci.core.common.Constants;
 import edp.davinci.core.common.ResultMap;
 import edp.davinci.dto.userDto.*;
 import edp.davinci.model.User;
+import edp.davinci.runner.CheckConfigRunner;
 import edp.davinci.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -36,6 +37,7 @@ import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -58,6 +60,9 @@ public class UserController extends BaseController {
     @Autowired
     private UserService userService;
 
+    @Value("${spring.mail.enable}")
+    private String mailEnable;
+
     /**
      * 用户注册
      *
@@ -74,7 +79,13 @@ public class UserController extends BaseController {
             ResultMap resultMap = new ResultMap().fail().message(bindingResult.getFieldErrors().get(0).getDefaultMessage());
             return ResponseEntity.status(resultMap.getCode()).body(resultMap);
         }
-        User user = userService.regist(userRegist);
+        User user;
+        if (CheckConfigRunner.MAIL_ENABLE_FLAG.equals(mailEnable)) {
+            user = userService.regist(userRegist);
+        } else {
+            user = userService.registNoMail(userRegist);
+        }
+
         return ResponseEntity.ok(new ResultMap().success().payload(tokenUtils.generateToken(user)));
     }
 

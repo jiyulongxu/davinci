@@ -37,6 +37,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class CheckConfigRunner implements ApplicationRunner {
 
+    public static String MAIL_ENABLE_FLAG="true";
+
     @Value("${spring.mail.host:}")
     private String mailHost;
 
@@ -50,6 +52,9 @@ public class CheckConfigRunner implements ApplicationRunner {
     @Value("${spring.mail.nickname}")
     private String nickName;
 
+    @Value("${spring.mail.enable}")
+    private String mailEnable;
+
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -60,24 +65,27 @@ public class CheckConfigRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (StringUtils.isEmpty(mailHost)) {
-            log.error("**************     Configuration error: mail host connot be EMPTY!      **************");
-            SpringApplication.exit(applicationContext);
-        }
 
-        if (StringUtils.isEmpty(mailPort)) {
-            log.error("**************     Configuration error: mail port connot be EMPTY!      **************");
-            SpringApplication.exit(applicationContext);
-        }
+        if (MAIL_ENABLE_FLAG.equals(mailEnable)) {
+            if (StringUtils.isEmpty(mailHost)) {
+                log.error("**************     Configuration error: mail host connot be EMPTY!      **************");
+                SpringApplication.exit(applicationContext);
+            }
 
-        if (StringUtils.isEmpty(mailUserName)) {
-            log.error("**************     Configuration error: mail username connot be EMPTY!      **************");
-            SpringApplication.exit(applicationContext);
-        }
+            if (StringUtils.isEmpty(mailPort)) {
+                log.error("**************     Configuration error: mail port connot be EMPTY!      **************");
+                SpringApplication.exit(applicationContext);
+            }
 
-        if (StringUtils.isEmpty(mailUserName)) {
-            log.error("**************     Configuration error: mail nickname connot be EMPTY!      **************");
-            SpringApplication.exit(applicationContext);
+            if (StringUtils.isEmpty(mailUserName)) {
+                log.error("**************     Configuration error: mail username connot be EMPTY!      **************");
+                SpringApplication.exit(applicationContext);
+            }
+
+            if (StringUtils.isEmpty(mailUserName)) {
+                log.error("**************     Configuration error: mail nickname connot be EMPTY!      **************");
+                SpringApplication.exit(applicationContext);
+            }
         }
 
         dacChannelUtil.loadDacMap();
