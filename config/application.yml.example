@@ -101,6 +101,7 @@ spring:
     username:
     password:
     nickname:
+    enable: flase
 
     properties:
       smtp:
